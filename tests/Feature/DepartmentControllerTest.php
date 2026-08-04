@@ -74,4 +74,41 @@ class DepartmentControllerTest extends TestCase
 
         $response->assertNotFound();
     }
+
+    public function test_store_creates_a_new_department(): void
+    {
+        $response = $this->post('/departments', [
+            'code' => 'MKT',
+            'name' => 'マーケティング部',
+            'sort_order' => 3,
+            'is_active' => '1',
+        ]);
+
+        $response->assertRedirect(route('departments.index'));
+
+        $department = $this->em->getRepository(Department::class)->findOneBy(['code' => 'MKT']);
+        $this->assertNotNull($department);
+        $this->assertSame('マーケティング部', $department->getName());
+        $this->assertSame(3, $department->getSortOrder());
+        $this->assertTrue($department->isActive());
+    }
+
+    public function test_store_fails_validation_with_duplicate_code(): void
+    {
+        $this->createDepartment('DEV', '開発部');
+
+        $response = $this->post('/departments', [
+            'code' => 'DEV',
+            'name' => '別の開発部',
+        ]);
+
+        $response->assertSessionHasErrors('code');
+    }
+
+    public function test_store_fails_validation_without_required_fields(): void
+    {
+        $response = $this->post('/departments', []);
+
+        $response->assertSessionHasErrors(['code', 'name']);
+    }
 }
