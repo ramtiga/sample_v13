@@ -56,4 +56,22 @@ class DepartmentControllerTest extends TestCase
         $response->assertSee('開発部');
         $response->assertSee('営業部');
     }
+
+    public function test_show_displays_department_detail(): void
+    {
+        $department = $this->createDepartment('HR', '人事部');
+
+        $response = $this->get('/departments/' . $department->getId());
+
+        $response->assertOk();
+        $response->assertSee('人事部');
+        $response->assertSee('HR');
+    }
+
+    public function test_show_returns_404_for_missing_department(): void
+    {
+        $response = $this->get('/departments/99999');
+
+        $response->assertNotFound();
+    }
 }
