@@ -13,6 +13,7 @@ class AppServiceProvider extends ServiceProvider
      */
     private const DOCTRINE_MANAGED_TABLES = [
         'posts',
+        'departments',
     ];
 
     /**
