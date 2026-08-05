@@ -8,11 +8,15 @@
         table { border-collapse: collapse; width: 100%; margin-bottom: 1rem; }
         th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; }
         .errors { color: #c00; margin-bottom: 1rem; }
+        .status { color: #080; margin-bottom: 1rem; }
         .actions a, .actions button { margin-right: 0.5rem; }
     </style>
 </head>
 <body>
     <main>
+        @if (session('status'))
+            <div class="status">{{ session('status') }}</div>
+        @endif
         @yield('content')
     </main>
 </body>
