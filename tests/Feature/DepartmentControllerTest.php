@@ -144,4 +144,42 @@ class DepartmentControllerTest extends TestCase
         $response->assertRedirect(route('departments.index'));
         $response->assertSessionDoesntHaveErrors();
     }
+
+    public function test_destroy_soft_deletes_department(): void
+    {
+        $department = $this->createDepartment('TEMP', '一時部署');
+        $id = $department->getId();
+
+        $response = $this->delete('/departments/' . $id);
+
+        $response->assertRedirect(route('departments.index'));
+
+        $this->em->clear();
+
+        // フィルターが有効な通常検索では見つからない
+        $found = $this->em->find(Department::class, $id);
+        $this->assertNull($found);
+
+        // 物理的にはレコードが残っており、deleted_atがセットされている
+        $connection = $this->em->getConnection();
+        $row = $connection->fetchAssociative(
+            'SELECT deleted_at FROM departments WHERE id = ?',
+            [$id]
+        );
+        $this->assertNotNull($row);
+        $this->assertNotNull($row['deleted_at']);
+    }
+
+    public function test_index_does_not_show_deleted_department(): void
+    {
+        $department = $this->createDepartment('TEMP', '一時部署');
+        $this->em->remove($department);
+        $this->em->flush();
+        $this->em->clear();
+
+        $response = $this->get('/departments');
+
+        $response->assertOk();
+        $response->assertDontSee('一時部署');
+    }
 }

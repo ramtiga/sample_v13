@@ -76,6 +76,18 @@ class DepartmentController extends Controller
             ->with('status', '所属マスタを更新しました。');
     }
 
+    public function destroy(int $department): RedirectResponse
+    {
+        $entity = $this->findOrFail($department);
+
+        $this->em->remove($entity);
+        $this->em->flush();
+
+        return redirect()
+            ->route('departments.index')
+            ->with('status', '所属マスタを削除しました。');
+    }
+
     private function findOrFail(int $id): Department
     {
         $entity = $this->em->find(Department::class, $id);
