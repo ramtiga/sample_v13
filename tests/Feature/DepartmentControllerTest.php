@@ -111,4 +111,37 @@ class DepartmentControllerTest extends TestCase
 
         $response->assertSessionHasErrors(['code', 'name']);
     }
+
+    public function test_update_modifies_existing_department(): void
+    {
+        $department = $this->createDepartment('DEV', '開発部');
+
+        $response = $this->put('/departments/' . $department->getId(), [
+            'code' => 'DEV',
+            'name' => '開発本部',
+            'sort_order' => 5,
+            'is_active' => '0',
+        ]);
+
+        $response->assertRedirect(route('departments.index'));
+
+        $this->em->clear();
+        $updated = $this->em->find(Department::class, $department->getId());
+        $this->assertSame('開発本部', $updated->getName());
+        $this->assertSame(5, $updated->getSortOrder());
+        $this->assertFalse($updated->isActive());
+    }
+
+    public function test_update_allows_keeping_same_code(): void
+    {
+        $department = $this->createDepartment('DEV', '開発部');
+
+        $response = $this->put('/departments/' . $department->getId(), [
+            'code' => 'DEV',
+            'name' => '開発部（改称なし）',
+        ]);
+
+        $response->assertRedirect(route('departments.index'));
+        $response->assertSessionDoesntHaveErrors();
+    }
 }

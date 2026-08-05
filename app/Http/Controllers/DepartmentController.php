@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Entities\Department;
 use App\Http\Requests\StoreDepartmentRequest;
+use App\Http\Requests\UpdateDepartmentRequest;
 use Doctrine\ORM\EntityManagerInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -50,6 +51,29 @@ class DepartmentController extends Controller
         return redirect()
             ->route('departments.index')
             ->with('status', '所属マスタを作成しました。');
+    }
+
+    public function edit(int $department): View
+    {
+        $entity = $this->findOrFail($department);
+
+        return view('departments.edit', ['department' => $entity]);
+    }
+
+    public function update(UpdateDepartmentRequest $request, int $department): RedirectResponse
+    {
+        $entity = $this->findOrFail($department);
+
+        $entity->setCode($request->validated('code'));
+        $entity->setName($request->validated('name'));
+        $entity->setSortOrder((int) ($request->validated('sort_order') ?? 0));
+        $entity->setIsActive((bool) $request->boolean('is_active', true));
+
+        $this->em->flush();
+
+        return redirect()
+            ->route('departments.index')
+            ->with('status', '所属マスタを更新しました。');
     }
 
     private function findOrFail(int $id): Department
