@@ -145,6 +145,19 @@ class DepartmentControllerTest extends TestCase
         $response->assertSessionDoesntHaveErrors();
     }
 
+    public function test_update_fails_validation_with_another_departments_code(): void
+    {
+        $this->createDepartment('DEV', '開発部');
+        $sales = $this->createDepartment('SALES', '営業部');
+
+        $response = $this->put('/departments/' . $sales->getId(), [
+            'code' => 'DEV',
+            'name' => '営業部',
+        ]);
+
+        $response->assertSessionHasErrors('code');
+    }
+
     public function test_destroy_soft_deletes_department(): void
     {
         $department = $this->createDepartment('TEMP', '一時部署');
